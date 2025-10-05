@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendly</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f4f8;
+      color: #333;
+    }
+    .btn, button {
+      background: #007bff;
+      color: #fff;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .login-box {
+      background: #fff;
+      padding: 30px;
+      width: 300px;
+      margin: 100px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    input, select {
+      width: 90%;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Attendly</h1>
+  <a href="#login" onclick="showLogin()" class="btn">Admin Login</a>
+
+  <div id="login" class="login-box" style="display:none;">
+    <h2>Admin Login</h2>
+    <input type="text" id="username" placeholder="Username"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+    <h2>Attendance Dashboard</h2>
+    <input type="text" id="studentName" placeholder="Student Name">
+    <select id="status">
+      <option>Present</option>
+      <option>Absent</option>
+    </select>
+    <button onclick="markAttendance()">Submit</button>
+    <div id="attendanceList"></div>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const API = "http://localhost:5000/api";
+
+    function showLogin() {
+      document.getElementById('login').style.display = 'block';
+    }
+
+    async function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const res = await fetch(`${API}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if(data.token){
+        localStorage.setItem("token", data.token);
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+      } else { alert("Login failed"); }
+    }
+
+    async function markAttendance() {
+      const name = document.getElementById("studentName").value;
+      const status = document.getElementById("status").value;
+
+      await fetch(`${API}/attendance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_name: name, status }),
+      });
+      alert("Attendance Recorded!");
+    }
+
+    function logout(){
+      localStorage.removeItem("token");
+      document.getElementById('dashboard').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
